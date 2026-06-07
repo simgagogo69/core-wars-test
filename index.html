@@ -1941,6 +1941,11 @@
 
                                 <!-- Mode selector for party leader -->
                                 <div id="partyModeRow" style="display:none;">
+                                    <!-- Quick invite online friends -->
+                                    <div class="social-subsection-head" style="margin-bottom:5px;">Invite Friends</div>
+                                    <div id="partyQuickInviteList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px;max-height:110px;overflow-y:auto;">
+                                        <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,0.2);letter-spacing:1px;">No online friends</div>
+                                    </div>
                                     <div class="social-subsection-head" style="margin-bottom:6px;">Mode</div>
                                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;">
                                         <div class="party-mode-pill ia selected" data-pmode="casual" onclick="partySetMode(this,'casual')">Casual</div>
@@ -4330,13 +4335,21 @@ const ME = () => window._sbUid;
 const presenceMap = {};
 
 // ── Init (called when Social tab opens) ───────────────────────────────────
+let _presenceHeartbeatStarted = false;
+
+function _startPresenceHeartbeat() {
+    if (_presenceHeartbeatStarted) return;
+    _presenceHeartbeatStarted = true;
+    socialPresencePing();
+    setInterval(socialPresencePing, 30000);
+}
+
 async function socialInit() {
     if (socialLoaded) { await socialRefresh(); return; }
     socialLoaded = true;
     await socialRefresh();
     socialSubscribeRealtime();
-    socialPresencePing();
-    setInterval(socialPresencePing, 30000);
+    _startPresenceHeartbeat();
     setInterval(socialRefresh, 15000);
 }
 
@@ -4349,11 +4362,13 @@ async function socialRefresh() {
 async function socialPresencePing() {
     if (!SB() || !ME()) return;
     const name = localStorage.getItem('cw_name') || 'Pilot';
-    await SB().from('presence').upsert({
-        uid: ME(), name, rank: playerRank,
-        last_seen: new Date().toISOString(),
-        party_code: partyState?.code || null,
-    }, { onConflict: 'uid' }).catch(() => {});
+    try {
+        await SB().from('presence').upsert({
+            uid: ME(), name, rank: playerRank,
+            last_seen: new Date().toISOString(),
+            party_code: partyState?.code || null,
+        }, { onConflict: 'uid' });
+    } catch (_) {}
 }
 
 // ── Realtime subscriptions ─────────────────────────────────────────────────
@@ -4379,10 +4394,10 @@ function socialSubscribeRealtime() {
         .on('postgres_changes', {
             event: '*', schema: 'public', table: 'parties'
         }, () => { if (partyState) loadParty(partyState.code); })
-        // Presence changes
+        // Presence changes — re-fetch so we get fresh last_seen values
         .on('postgres_changes', {
             event: '*', schema: 'public', table: 'presence'
-        }, () => { renderFriendsList(); })
+        }, () => { loadFriends(); })
         .subscribe();
 }
 
@@ -4422,6 +4437,8 @@ async function loadFriends() {
 
     renderFriendsList();
     updateOnlineCount();
+    // Refresh quick-invite list inside the party panel if one is active
+    if (partyState) renderParty();
 }
 
 // ── Load pending requests ──────────────────────────────────────────────────
@@ -4723,8 +4740,9 @@ function subscribePartyChannel(code) {
             renderParty();
             renderFriendsList();
 
-            // If leader pushed a deploy signal, join queue
-            if (d.deploy_mode) {
+            // If leader pushed a deploy signal, join queue (non-leaders only —
+            // the leader already joins directly in partyDeploy())
+            if (d.deploy_mode && partyState.leaderId !== ME()) {
                 currentGameMode = d.deploy_mode;
                 const rc = document.getElementById('rCode');
                 if (rc) rc.value = d.deploy_room_code || '';
@@ -4754,6 +4772,28 @@ function renderParty() {
     const isLeader = partyState.leaderId === ME();
     document.getElementById('partyModeRow').style.display = isLeader ? '' : 'none';
     document.getElementById('partyWaitRow').style.display = isLeader ? 'none' : '';
+
+    // Render quick invite list (only meaningful for leader)
+    if (isLeader) {
+        const qiList = document.getElementById('partyQuickInviteList');
+        if (qiList) {
+            const memberUids = new Set(partyState.members.map(m => m.uid));
+            const invitable  = socialFriends.filter(f => f.online && !memberUids.has(f.id));
+            if (!invitable.length) {
+                qiList.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:rgba(255,255,255,0.2);letter-spacing:1px;">No online friends to invite</div>`;
+            } else {
+                qiList.innerHTML = invitable.map(f => {
+                    const ri = getRankInfo(f.rank);
+                    const initials = f.name.slice(0,2).toUpperCase();
+                    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:7px;background:rgba(255,255,255,0.03);">
+                        <div style="width:24px;height:24px;border-radius:50%;background:${ri.bg};border:1px solid ${ri.color}44;color:${ri.color};font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${initials}</div>
+                        <div style="flex:1;min-width:0;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(f.name)}</div>
+                        <span class="social-mini-btn invite" style="flex-shrink:0;" onclick="partyInviteFriend('${f.id}','${escHtml(f.name)}')">Invite</span>
+                    </div>`;
+                }).join('');
+            }
+        }
+    }
 
     // Sync mode pill
     document.querySelectorAll('.party-mode-pill').forEach(p => {
@@ -4836,6 +4876,12 @@ async function partyDeploy() {
     const rc = document.getElementById('rCode');
     if (rc) rc.value = roomCode;
     document.getElementById('btnJoin')?.click();
+    // Clear deploy signal after a short window so it doesn't
+    // re-trigger if the party row is re-fetched later
+    setTimeout(() => {
+        SB().from('parties').update({ deploy_mode: null, deploy_room_code: null })
+            .eq('code', partyState?.code).catch(() => {});
+    }, 8000);
 }
 
 // ── Hook mmTab to init social ──────────────────────────────────────────────
@@ -5802,11 +5848,13 @@ function processEvents(evs) {
                     // ── Recoil attribution ─────────────────────────────────────
                     const rNow = performance.now();
                     // 1. Player — very close to local player position
+                    let _shotIsLocalPlayer = false;
                     if (ev.tm === myState.team &&
                         Math.hypot(ev.x - myState.x, ev.y - myState.y) < 55) {
                         playerRecoilT  = rNow;
                         camRecoilT     = rNow;
                         camRecoilAngle = ev.a;
+                        _shotIsLocalPlayer = true;
                     }
                     // 2. Building turret — nearest building of same team within 120 units
                     {
@@ -5822,7 +5870,8 @@ function processEvents(evs) {
                         }
                     }
                     // 3. Vehicle cannon — nearest vehicle of same team within 140 units
-                    {
+                    // Skip if this shot was already attributed to the local player's gun
+                    if (!_shotIsLocalPlayer) {
                         let bestD = 140, bestId = null;
                         for (const [vid, v] of localVehicles) {
                             if (v.tm !== ev.tm) continue;
@@ -9643,20 +9692,6 @@ function drawVehicle(v) {
         ctx.restore();
     }
 
-    // Infantry cargo pips — shown above all APC types when loaded
-    if (isApcType && (v.ic || 0) > 0) {
-        const ic   = v.ic;
-        const pip  = 5, gap = 8;
-        const vR   = VEHICLE_DEFS[v.tp]?.r || 36;
-        const pipY = v.y - vR - 16;
-        const startX = v.x - ((ic * gap) - (gap - pip)) / 2;
-        for (let pi = 0; pi < ic; pi++) {
-            ctx.fillStyle = col; ctx.globalAlpha = 0.9;
-            ctx.fillRect(startX + pi * gap, pipY, pip, pip);
-        }
-        ctx.globalAlpha = 1;
-    }
-
 
     // ── Counter-rotated UI (HP bar, label, prompts) ───────────────────────────
     ctx.save();
@@ -9677,6 +9712,49 @@ function drawVehicle(v) {
     ctx.shadowBlur = 0;
     ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 0.5;
     ctx.strokeRect(-barW/2, hudY, barW, 7);
+
+    // ── Infantry cargo bar — below the vehicle body ───────────────────────────
+    if (isApcType) {
+        const capacity = vDefC?.infantryCapacity || 4;
+        const loaded   = v.ic || 0;
+        const cbW      = 56;               // total bar width
+        const cbH      = 7;                // bar height (matches HP bar)
+        const gap      = 3;                // gap between segments
+        const segW     = (cbW - (capacity - 1) * gap) / capacity;
+        const cbX      = -cbW / 2;
+        const cbY      = v.r + 10;         // below vehicle shadow
+
+        // Background track
+        ctx.fillStyle = 'rgba(0,0,0,0.70)';
+        ctx.fillRect(cbX - 2, cbY - 2, cbW + 4, cbH + 4);
+
+        // Segments
+        for (let si = 0; si < capacity; si++) {
+            const sx = cbX + si * (segW + gap);
+            if (si < loaded) {
+                ctx.fillStyle = '#22c55e';
+                ctx.shadowColor = '#22c55e'; ctx.shadowBlur = 4;
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.shadowBlur = 0;
+            }
+            ctx.fillRect(sx, cbY, segW, cbH);
+        }
+        ctx.shadowBlur = 0;
+
+        // Segment divider lines
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = gap;
+        for (let si = 1; si < capacity; si++) {
+            const sx = cbX + si * (segW + gap) - gap / 2;
+            ctx.beginPath(); ctx.moveTo(sx, cbY); ctx.lineTo(sx, cbY + cbH); ctx.stroke();
+        }
+
+        // Count label  e.g. "2 / 4"
+        ctx.font = 'bold 10px "Barlow Condensed", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = loaded > 0 ? '#86efac' : 'rgba(255,255,255,0.3)';
+        ctx.fillText(`${loaded} / ${capacity}`, 0, cbY + cbH + 11);
+    }
 
     // Name label
     if (vDefC) {
@@ -15237,6 +15315,10 @@ window._sbClient = sb;
 
     // ── Global chat via Supabase Realtime ────────────────────────────────
     gchatSupabaseInit(sb, uid);
+
+    // Start presence heartbeat immediately — users show as online
+    // even if they never open the Social tab
+    _startPresenceHeartbeat();
 
     // Push current stats on load
     window.fw.savePlayerProfile({
