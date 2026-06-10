@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root { --faction-clr: #f59e0b; }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-drag: none; }
         input, textarea { user-select: text; -webkit-user-select: text; }
 
@@ -1124,6 +1125,88 @@
         }
         #chatSendBtn:hover { opacity: 0.82; }
 
+        /* ── Chat scope toggle ── */
+        #chatScopeRow {
+            padding: 6px 12px 0;
+            display: flex; gap: 5px; flex-shrink: 0;
+        }
+        .chat-scope-pill {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 3px 10px; border-radius: 20px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: transparent; color: rgba(255,255,255,0.28);
+            transition: all 0.15s;
+        }
+        .chat-scope-pill:hover { color: rgba(255,255,255,0.55); border-color: rgba(255,255,255,0.22); }
+        .chat-scope-pill.active {
+            background: rgba(255,255,255,0.1);
+            color: white; border-color: rgba(255,255,255,0.3);
+        }
+        .chat-scope-pill.active.team-pill {
+            background: rgba(251,191,36,0.15);
+            color: #fbbf24; border-color: rgba(251,191,36,0.4);
+        }
+
+        /* Team-chat message style */
+        .chat-msg.team-msg {
+            border-left: 2px solid rgba(251,191,36,0.45);
+            padding-left: 6px;
+            margin-left: -8px;
+        }
+        .team-tag {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+            color: #fbbf24; margin-right: 4px; opacity: 0.8;
+        }
+
+        /* ── Phase chat overlay (vote + opselect screens) ── */
+        #phaseChatPanel {
+            position: fixed; bottom: 22px; right: 22px; z-index: 500;
+            width: 290px;
+            display: none; flex-direction: column;
+            background: rgba(6,9,20,0.88);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
+        }
+        #phaseChatHeader {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px; font-weight: 700; letter-spacing: 2px;
+            color: rgba(255,255,255,0.25); text-transform: uppercase; flex-shrink: 0;
+        }
+        #phaseScopeRow { display: flex; gap: 4px; margin-left: auto; }
+        #phaseChatLog {
+            flex: 1; overflow-y: auto; height: 180px;
+            padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+            scroll-behavior: smooth;
+        }
+        #phaseChatLog::-webkit-scrollbar { width: 3px; }
+        #phaseChatLog::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+        #phaseChatInputRow {
+            display: flex; gap: 6px; padding: 7px 8px;
+            border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+        }
+        #phaseChatInput {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+            outline: none; color: white; padding: 5px 9px;
+            font-family: 'Barlow', sans-serif; font-size: 13px;
+        }
+        #phaseChatInput::placeholder { color: rgba(255,255,255,0.2); }
+        #phaseChatSendBtn {
+            padding: 0 12px; border-radius: 6px; border: none; cursor: pointer;
+            background: linear-gradient(135deg,#dc2626,#2563eb);
+            color: white; font-family: 'Barlow Condensed', sans-serif;
+            font-size: 13px; font-weight: 700; letter-spacing: 1px;
+        }
+
         /* Match info right column */
         #lobbyMatchInfo {
             width: 200px; flex-shrink: 0;
@@ -1466,9 +1549,9 @@
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 10px; font-weight: 700; letter-spacing: 2px;
             text-transform: uppercase;
-            color: #a78bfa;
-            background: rgba(167,139,250,0.1);
-            border: 1px solid rgba(167,139,250,0.25);
+            color: var(--faction-clr);
+            background: color-mix(in srgb, var(--faction-clr) 12%, transparent);
+            border: 1px solid color-mix(in srgb, var(--faction-clr) 30%, transparent);
             border-radius: 4px; padding: 2px 7px;
         }
         /* Weapon selection area */
@@ -1542,20 +1625,20 @@
         #opLockBtn:not(:disabled):not(.locked):hover { opacity: 0.88; transform: translateY(-1px); }
         /* Ability info box */
         #opAbilityBox {
-            background: rgba(167,139,250,0.07);
-            border: 1px solid rgba(167,139,250,0.2);
+            background: color-mix(in srgb, var(--faction-clr) 8%, transparent);
+            border: 1px solid color-mix(in srgb, var(--faction-clr) 25%, transparent);
             border-radius: 10px; padding: 12px 16px;
             display: none;
         }
         .ability-label {
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 10px; font-weight: 700; letter-spacing: 3px;
-            text-transform: uppercase; color: #a78bfa; margin-bottom: 4px;
+            text-transform: uppercase; color: var(--faction-clr); margin-bottom: 4px;
         }
         .ability-name {
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 17px; font-weight: 800; letter-spacing: 1px;
-            color: #c4b5fd;
+            color: color-mix(in srgb, var(--faction-clr) 80%, white);
         }
         .ability-desc {
             font-family: 'Barlow', sans-serif; font-size: 12px;
@@ -1566,8 +1649,9 @@
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 10px; font-weight: 700; letter-spacing: 2px;
             text-transform: uppercase; padding: 2px 7px;
-            background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3);
-            border-radius: 4px; color: #a78bfa;
+            background: color-mix(in srgb, var(--faction-clr) 18%, transparent);
+            border: 1px solid color-mix(in srgb, var(--faction-clr) 35%, transparent);
+            border-radius: 4px; color: var(--faction-clr);
         }
         /* Player lock-in status bar */
         #opLockStatus {
@@ -1736,11 +1820,7 @@
             <button onclick="toggleNews()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);font-size:18px;line-height:1;padding:2px 4px;transition:color 0.15s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.3)'">&#x2715;</button>
         </div>
         <div id="startNewsContent">
-            <div class="news-item"><div class="news-tag tag-update">v0.9.1</div><div class="news-title">Tunnel Rat Mech rework & intercept mechanic</div><div class="news-sub">Slash VFX, intercept lasers, overhauled vehicle depot placement.</div><div class="news-date">Today</div></div>
-            <div class="news-item"><div class="news-tag tag-event">Season 1</div><div class="news-title">Ranked Season 1 is live</div><div class="news-sub">Climb from Iron to Legend. RP rewards at season end.</div><div class="news-date">This week</div></div>
-            <div class="news-item"><div class="news-tag tag-fix">Hotfix</div><div class="news-title">Wall placement & water zone collision fixes</div><div class="news-sub">Buildings no longer clip into water or the centre divide.</div><div class="news-date">3 days ago</div></div>
-            <div class="news-item"><div class="news-tag tag-update">Balance</div><div class="news-title">ROE Breaker armor reduced · BGM turret rate up</div><div class="news-sub">Meta adjustments from Season 0 data.</div><div class="news-date">5 days ago</div></div>
-            <div class="news-item"><div class="news-tag tag-event">Community</div><div class="news-title">First 2v2 tournament — sign-ups open</div><div class="news-sub">8-team bracket, best-of-3.</div><div class="news-date">1 week ago</div></div>
+            <div class="news-item"><div class="news-tag tag-update">v1</div><div class="news-title">Core Wars is finally fully released</div><div class="news-sub">Everything. Vehicles, Operators, Units, Weapons, and Social system.</div><div class="news-date">Today</div></div>
         </div>
     </div>
 </div>
@@ -2072,6 +2152,11 @@
             <!-- Chat (fills remaining width) -->
             <div id="chatSection">
                 <div id="chatLog"></div>
+                <!-- Scope toggle row -->
+                <div id="chatScopeRow">
+                    <button class="chat-scope-pill active" data-scope="lobby" onclick="setChatScope('lobby')">Lobby</button>
+                    <button class="chat-scope-pill team-pill" data-scope="team" onclick="setChatScope('team')">Team</button>
+                </div>
                 <div id="chatInputRow">
                     <input id="chatInput" class="field-dark ia" placeholder="Say something to the lobby…" maxlength="120" autocomplete="off"/>
                     <button id="chatSendBtn" class="ia">Send</button>
@@ -2205,6 +2290,22 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ══════════════════ PHASE CHAT OVERLAY (vote + opselect) ══════════════════ -->
+<div id="phaseChatPanel">
+    <div id="phaseChatHeader">
+        <span>Chat</span>
+        <div id="phaseScopeRow">
+            <button class="chat-scope-pill active" data-scope="lobby" onclick="setChatScope('lobby')">Lobby</button>
+            <button class="chat-scope-pill team-pill" data-scope="team" onclick="setChatScope('team')">Team</button>
+        </div>
+    </div>
+    <div id="phaseChatLog"></div>
+    <div id="phaseChatInputRow">
+        <input id="phaseChatInput" placeholder="Say something…" maxlength="120" autocomplete="off"/>
+        <button id="phaseChatSendBtn" onclick="sendPhaseChatMsg()">Send</button>
     </div>
 </div>
 
@@ -2603,7 +2704,7 @@
 <!-- ══════════════════ IN-GAME CHAT BAR ══════════════════ -->
 <div id="gameChatWrap">
     <div id="gameChatBar">
-        <span id="gameChatLabel">Chat</span>
+        <span id="gameChatLabel">LOBBY</span>
         <input id="gameChatInput" maxlength="120" autocomplete="off" spellcheck="false" placeholder="Type a message…"/>
         <span id="gameChatHint">Enter · Send &nbsp;│&nbsp; Esc · Close</span>
     </div>
@@ -2650,6 +2751,24 @@ function showScreen(name) {
     if (name === 'lobby')     $lobbyScreen.classList.remove('hidden');
     if (name === 'vote')      $voteScreen.classList.remove('hidden');
     if (name === 'opselect')  document.getElementById('opSelectScreen').classList.remove('hidden');
+
+    // Phase chat overlay — visible on vote + opselect, hidden everywhere else
+    {
+        const panel = document.getElementById('phaseChatPanel');
+        if (panel) {
+            const show = name === 'vote' || name === 'opselect';
+            panel.style.display = show ? 'flex' : 'none';
+            if (show) {
+                // Populate with recent chat history so context isn't lost
+                const log = document.getElementById('phaseChatLog');
+                if (log) {
+                    log.innerHTML = '';
+                    chatMessages.slice(-40).forEach(m => log.appendChild(buildChatMsgDiv(m)));
+                    log.scrollTop = log.scrollHeight;
+                }
+            }
+        }
+    }
     if (name === 'game') {
         $hudTop.classList.remove('hidden');
         $hudBot.classList.remove('hidden');
@@ -2783,6 +2902,56 @@ function getRecoilOffset(t0, dur, dist) {
 }
 // Each particle: { x,y, vx,vy, r,r0, col, alpha, life, maxLife, drag, gravity, bloom }
 const particles = [];
+
+// ─── Static Background Cache ──────────────────────────────────────────────────
+// Land gradient + team gradients + grid + border + watermark — drawn once per map.
+let _bgCache = null, _bgCacheMapId = null;
+function buildBgCache() {
+    if (!mapData || !mapData.mw) return;
+    const mw = mapData.mw, mh = mapData.mh;
+    const cacheId = mapData.mw + 'x' + mapData.mh + ':' + (mapName || '');
+    if (_bgCacheMapId === cacheId && _bgCache) return;
+    const oc = document.createElement('canvas');
+    oc.width = mw; oc.height = mh;
+    const ot = oc.getContext('2d');
+    // Land gradient
+    const landGrad = ot.createLinearGradient(0, 0, 0, mh);
+    landGrad.addColorStop(0, '#0d1117'); landGrad.addColorStop(0.5, '#0e1219'); landGrad.addColorStop(1, '#0b0f14');
+    ot.fillStyle = landGrad; ot.fillRect(0, 0, mw, mh);
+    // Team colour gradients
+    const rg = ot.createLinearGradient(0, 0, mw * 0.52, 0);
+    rg.addColorStop(0, 'rgba(127,29,29,0.30)'); rg.addColorStop(1, 'rgba(127,29,29,0)');
+    ot.fillStyle = rg; ot.fillRect(0, 0, mw / 2, mh);
+    const bg = ot.createLinearGradient(mw, 0, mw * 0.48, 0);
+    bg.addColorStop(0, 'rgba(29,78,216,0.30)'); bg.addColorStop(1, 'rgba(29,78,216,0)');
+    ot.fillStyle = bg; ot.fillRect(mw / 2, 0, mw, mh);
+    // Grid — ONE beginPath/stroke for all lines (eliminates ~85 separate stroke calls)
+    ot.strokeStyle = 'rgba(255,255,255,0.022)'; ot.lineWidth = 1;
+    ot.beginPath();
+    for (let x = 0; x <= mw; x += 80) { ot.moveTo(x, 0); ot.lineTo(x, mh); }
+    for (let y = 0; y <= mh; y += 80) { ot.moveTo(0, y); ot.lineTo(mw, y); }
+    ot.stroke();
+    // Border
+    ot.strokeStyle = 'rgba(255,255,255,0.10)'; ot.lineWidth = 5;
+    ot.strokeRect(2, 2, mw - 4, mh - 4);
+    // Map name watermark
+    if (mapName) {
+        ot.save(); ot.globalAlpha = 0.045;
+        ot.font = 'bold 160px "Bebas Neue", sans-serif';
+        ot.fillStyle = '#ffffff'; ot.textAlign = 'center'; ot.textBaseline = 'middle';
+        ot.fillText(mapName, mw / 2, mh / 2); ot.restore();
+    }
+    _bgCache = oc; _bgCacheMapId = cacheId;
+}
+
+// ─── Particle Object Pool ─────────────────────────────────────────────────────
+// Eliminates per-particle heap allocation and O(N) splice on death.
+const _partPool = [];
+function _acquireParticle() {
+    if (_partPool.length > 0) return _partPool.pop();
+    return { x:0, y:0, vx:0, vy:0, r:0, r0:0, col:'#fff', alpha:1, life:0, maxLife:0.1, drag:0, gravity:0, bloom:false };
+}
+function _releaseParticle(p) { if (_partPool.length < 512) _partPool.push(p); }
 const MAX_PARTICLES = 260;
 // Track vehicle positions from last frame to compute movement for exhaust
 const _vehLastPos = new Map(); // vehicleId → {x,y,distAccum}
@@ -2808,6 +2977,23 @@ let gameChatOpen = false;
 // Map: playerId → { msg, expireAt }  — bubbles to render above each player
 const chatBubbles = new Map();
 let chatMessages      = [];
+// 'lobby' = all players see it | 'team' = teammates only
+let chatScope = 'lobby';
+
+function setChatScope(scope) {
+    chatScope = scope;
+    // Sync all toggle pills across lobby and phase-chat panels
+    document.querySelectorAll('.chat-scope-pill').forEach(el => {
+        el.classList.toggle('active', el.dataset.scope === scope);
+    });
+    // Update placeholders
+    const ph = scope === 'team' ? 'Message teammates…' : 'Say something to the lobby…';
+    const phPhase = scope === 'team' ? 'Message teammates…' : 'Say something…';
+    const ci = document.getElementById('chatInput');
+    const pi = document.getElementById('phaseChatInput');
+    if (ci) ci.placeholder = ph;
+    if (pi) pi.placeholder = phPhase;
+}
 let inputSendInterval = null;
 
 // Ready state
@@ -2885,26 +3071,33 @@ let myPincerDash = null;  // null | { sx, sy, ex, ey, t0, dur } — active dash 
 let myAbilityCooldownEnd = 0;    // performance.now() timestamp when cooldown expires
 let myAbilityActive      = false; // true while the boost/effect is running
 let mySpeedBoostEnd      = 0;    // performance.now() when local speed boost expires (for prediction)
+let myMoveSpeedMult      = 1.0;  // movement speed multiplier from equipped weapon
 const localSuppDevices   = new Map(); // id → { x, y, a, team, expiresAt }
 
 // Faction/team runtime state (resolved at game start)
 let teamFactions       = ['roe', 'roe'];
 let factionVoteTallies = [{}, {}];   // legacy compat, not used in vote UI anymore
 
-function addChatMessage(nm, msg, team, isMe = false, isSystem = false) {
-    const entry = { nm, msg, team, isMe, isSystem };
+function addChatMessage(nm, msg, team, isMe = false, isSystem = false, scope = 'lobby') {
+    const entry = { nm, msg, team, isMe, isSystem, scope };
     chatMessages.push(entry);
     renderChatMessage(entry);
 }
 
-function renderChatMessage(m) {
-    const log = document.getElementById('chatLog');
-    if (!log) return;
+// Build a single message DOM node (caller clones if needed for multiple logs)
+function buildChatMsgDiv(m) {
     const div = document.createElement('div');
-    div.className = 'chat-msg' + (m.isSystem ? ' system-msg' : '');
+    const isTeam = m.scope === 'team';
+    div.className = 'chat-msg' + (m.isSystem ? ' system-msg' : '') + (isTeam ? ' team-msg' : '');
     if (m.isSystem) {
         div.textContent = m.msg;
     } else {
+        if (isTeam) {
+            const tag = document.createElement('span');
+            tag.className = 'team-tag';
+            tag.textContent = 'TEAM ';
+            div.appendChild(tag);
+        }
         const nameSpan = document.createElement('span');
         nameSpan.className = 'msg-name';
         nameSpan.textContent = m.nm;
@@ -2915,8 +3108,32 @@ function renderChatMessage(m) {
         div.appendChild(nameSpan);
         div.appendChild(textSpan);
     }
+    return div;
+}
+
+function _appendToLog(log, div) {
+    if (!log) return;
     log.appendChild(div);
     log.scrollTop = log.scrollHeight;
+}
+
+function renderChatMessage(m) {
+    const mainLog   = document.getElementById('chatLog');
+    const phaseLog  = document.getElementById('phaseChatLog');
+    const phasePanel = document.getElementById('phaseChatPanel');
+    const phaseOpen  = phasePanel && phasePanel.style.display !== 'none';
+
+    const div = buildChatMsgDiv(m);
+
+    if (mainLog && phaseOpen && phaseLog) {
+        // Both logs visible — append original to main, clone to overlay
+        _appendToLog(mainLog, div);
+        _appendToLog(phaseLog, buildChatMsgDiv(m));
+    } else if (phaseOpen && phaseLog) {
+        _appendToLog(phaseLog, div);
+    } else {
+        _appendToLog(mainLog, div);
+    }
 }
 
 
@@ -3200,7 +3417,7 @@ function renderSettingsInto(el) {
         </div></div>
         <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:10px;">Controls</div>
         <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            ${[['Move','WASD'],['Aim','Mouse'],['Shoot','LMB'],['Build Mode','B'],['Chat','T'],['Exit Vehicle','E']].map(([a,k])=>`
+            ${[['Move','WASD'],['Aim','Mouse'],['Shoot','LMB'],['Build Mode','Sidebar'],['Chat','Enter'],['Exit/Enter Vehicle','E'],['Operator Ability','Q']].map(([a,k])=>`
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:rgba(255,255,255,0.45);">${a}</span>
                 <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:2px 8px;">${k}</span>
@@ -3208,7 +3425,7 @@ function renderSettingsInto(el) {
         </div></div>
         <div><div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:10px;">About</div>
         <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;">
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);line-height:1.6;">Core Wars v0.9.1 · Season 1<br>Team v Team Core Siege</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);line-height:1.6;">Core Wars v1 · Season 1<br>Team v Team Core Siege</div>
         </div></div></div>`;
 }
 
@@ -3308,8 +3525,18 @@ function sendChat() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg || !ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ t: 'chat', msg }));
-    addChatMessage(myState.name, msg, myState.team, true);
+    ws.send(JSON.stringify({ t: 'chat', msg, scope: chatScope }));
+    addChatMessage(myState.name, msg, myState.team, true, false, chatScope);
+    input.value = '';
+}
+
+// Sends chat from the phase overlay (vote / opselect screens)
+function sendPhaseChatMsg() {
+    const input = document.getElementById('phaseChatInput');
+    const msg = input?.value.trim();
+    if (!msg || !ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ t: 'chat', msg, scope: chatScope }));
+    addChatMessage(myState.name, msg, myState.team, true, false, chatScope);
     input.value = '';
 }
 
@@ -3340,11 +3567,12 @@ function sendGameChat() {
     const msg = input.value.trim();
     closeGameChat();
     if (!msg || !ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ t: 'chat', msg }));
+    // In-game chat is always lobby-wide — no team scope
+    ws.send(JSON.stringify({ t: 'chat', msg, scope: 'lobby' }));
     // Show bubble on self immediately
     chatBubbles.set(myId, { msg, expireAt: performance.now() + 4500 });
-    // Also add to lobby/game chat log
-    addChatMessage(myState.name, msg, myState.team, true);
+    // Add to chat log as lobby message
+    addChatMessage(myState.name, msg, myState.team, true, false, 'lobby');
 }
 
 // ─── Ready button ─────────────────────────────────────────────────────────────
@@ -3451,7 +3679,7 @@ function buildFactionVoteCards() {
         card.className = 'vote-card ia' + (isVoted ? ' voted' : '');
         card.onclick = () => voteFacton(fid);
         card.innerHTML =
-            `<div class="vote-card-title" style="color:${f.color};">${f.short}</div>` +
+            `<div class="vote-card-title" style="color:${f.color};">${f.name}</div>` +
             `<div class="vote-card-desc">${f.desc}</div>` +
             `<div class="vote-bar-wrap">` +
               `<div class="vote-bar-bg"><div class="vote-bar-fill" style="width:${pct}%;background:${f.color};"></div></div>` +
@@ -3470,7 +3698,7 @@ function renderMapThumb(mapName) {
             {x:1300,y:1950,w:2200,h:50}, {x:0,y:0,w:380,h:100}, {x:0,y:1950,w:380,h:50},
             {x:4420,y:0,w:380,h:100}, {x:4420,y:1950,w:380,h:50}, {x:2050,y:880,w:700,h:160},
         ],
-        'CHOKEPOINT'  : [
+        'CHOKEPOINTS'  : [
             {x:1500,y:0,w:1800,h:180}, {x:1500,y:700,w:1800,h:200},
             {x:1500,y:900,w:700,h:250}, {x:2600,y:900,w:700,h:250},
             {x:1500,y:1150,w:1800,h:230}, {x:1500,y:1900,w:1800,h:100},
@@ -3546,9 +3774,9 @@ function buildMapVoteCards() {
     el.innerHTML = '';
     const MAP_DESCS = {
         'WARZONE'     : 'Open land. No water.',
-        'ARCHIPELAGO' : '3 bridges, 2 islands.',
-        'CHOKEPOINT'  : '2 lanes + thin midline.',
-        'DELTA'       : '3 river channels, 4 paths.',
+        'ARCHIPELAGO' : '3 bridges, One big puddle.',
+        'CHOKEPOINTS'  : '2 lanes + no midline.',
+        'DELTA'       : '3 river channels, 2 paths.',
         'FRACTURE'    : '2 lakes, asymmetric routes.',
     };
     const totalVotes = Object.values(mapTally).reduce((a, b) => a + b, 0);
@@ -3636,6 +3864,7 @@ function handleOpSelectStart(d) {
         const f = FACTIONS[d.faction];
         if (f) fLabel.textContent = `${f.short} · Choose your role and loadout`;
         fLabel.style.color = (f && f.color) ? f.color : 'rgba(255,255,255,0.35)';
+        if (f && f.color) document.documentElement.style.setProperty('--faction-clr', f.color);
     }
 
     // Build operator cards
@@ -3677,7 +3906,7 @@ function buildOpCards() {
         card.onclick = () => { if (!myLockedIn) selectOperator(op.id); };
 
         const abilityTag = op.abilityId
-            ? `<div class="op-ability-tag">⚡ ${ABILITY_DEFS_CLIENT[op.abilityId]?.name || op.abilityId}</div>`
+            ? `<div class="op-ability-tag">${ABILITY_DEFS_CLIENT[op.abilityId]?.name || op.abilityId}</div>`
             : '';
 
         card.innerHTML =
@@ -3694,10 +3923,8 @@ function selectOperator(opId) {
     const op = opSelectOperators.find(o => o.id === opId);
     if (!op) return;
 
-    // Auto-select first weapon for this operator
-    if (op.allowedWeapons.length > 0) {
-        mySelectedWeapon = op.allowedWeapons[0];
-    }
+    // Reset weapon selection so no weapon appears pre-highlighted
+    mySelectedWeapon = null;
 
     // Tell server
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -3852,8 +4079,8 @@ function buildOpLockStatus() {
 // Server confirmed operator selection for us
 function handleOpConfirmed(d) {
     mySelectedOperator = d.opId;
-    mySelectedWeapon   = d.weaponId;
-    // Weapon auto-selection may have changed — rebuild weapon grid
+    // Do NOT apply a pre-selected weapon — player must click one explicitly.
+    // mySelectedWeapon stays null until the player picks via selectWeapon().
     const op = opSelectOperators.find(o => o.id === d.opId);
     if (op) buildWeaponGrid(op.allowedWeapons);
     updateOpLockBtn();
@@ -4275,6 +4502,21 @@ let   lastInputAt   = 0;
 // ─── Camera ───────────────────────────────────────────────────────────────────
 const cam = { x: 2400, y: 1000 };
 const CAM_ZOOM  = 0.82;   // slightly zoomed out for better situational awareness
+
+// ─── Viewport Culling ─────────────────────────────────────────────────────────
+// Computed once per frame in drawWorld(); used to skip offscreen entities.
+const _vb = { x1: 0, y1: 0, x2: 4800, y2: 2000 };
+function _computeViewBounds(margin = 120) {
+    const rot = getCamRotation();
+    const ac  = Math.abs(Math.cos(rot)), as_ = Math.abs(Math.sin(rot));
+    const hw  = (ac * canvas.width  + as_ * canvas.height) / (2 * CAM_ZOOM) + margin;
+    const hh  = (as_ * canvas.width + ac  * canvas.height) / (2 * CAM_ZOOM) + margin;
+    _vb.x1 = cam.x - hw; _vb.x2 = cam.x + hw;
+    _vb.y1 = cam.y - hh; _vb.y2 = cam.y + hh;
+}
+function inView(x, y, r = 0) {
+    return x + r >= _vb.x1 && x - r <= _vb.x2 && y + r >= _vb.y1 && y - r <= _vb.y2;
+}
 const GRID_SIZE     = 16;     // building snap grid
 const WALL_W        = GRID_SIZE;      // wall collision box width/height (matches server & visual)
 const WALL_HALF     = GRID_SIZE / 2;  // WALL_W / 2
@@ -4335,13 +4577,28 @@ const ME = () => window._sbUid;
 const presenceMap = {};
 
 // ── Init (called when Social tab opens) ───────────────────────────────────
+// Presence fires every 2-5 min (randomised) while the tab is open,
+// plus an immediate ping on app-load, game join/leave, and tab focus.
+const PRESENCE_MIN_MS       = 2 * 60 * 1000;   //  2 min
+const PRESENCE_MAX_MS       = 5 * 60 * 1000;   //  5 min
+const PRESENCE_ONLINE_MS    = 7 * 60 * 1000;   //  7 min threshold (> max interval)
+
 let _presenceHeartbeatStarted = false;
+
+function _scheduleNextPresencePing() {
+    const delay = PRESENCE_MIN_MS + Math.random() * (PRESENCE_MAX_MS - PRESENCE_MIN_MS);
+    setTimeout(() => { socialPresencePing(); _scheduleNextPresencePing(); }, delay);
+}
 
 function _startPresenceHeartbeat() {
     if (_presenceHeartbeatStarted) return;
     _presenceHeartbeatStarted = true;
-    socialPresencePing();
-    setInterval(socialPresencePing, 30000);
+    socialPresencePing();           // immediate on app load
+    _scheduleNextPresencePing();    // recurring 2-5 min pings
+    // Ping when the tab comes back into focus (user returns from another tab)
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) socialPresencePing();
+    });
 }
 
 async function socialInit() {
@@ -4430,7 +4687,7 @@ async function loadFriends() {
     socialFriends = (profilesRes.data || []).map(p => {
         const pres = presMap[p.id];
         const lastSeen = pres ? new Date(pres.last_seen).getTime() : 0;
-        const online = (now - lastSeen) < 45000;
+        const online = (now - lastSeen) < PRESENCE_ONLINE_MS;
         return { id: p.id, name: p.name || '?', rank: p.rank || 0,
                  online, partyCode: pres?.party_code || null };
     }).sort((a, b) => b.online - a.online || a.name.localeCompare(b.name));
@@ -4724,29 +4981,54 @@ async function loadParty(code) {
     renderFriendsList();
 }
 
+// ── Party game launch — shared by leader and members ─────────────────────
+function startGameForParty(mode, roomCode) {
+    // Close any stale connection first
+    if (ws) { try { ws.close(); } catch (_) {} ws = null; }
+    currentGameMode = mode;
+    const rc = document.getElementById('rCode');
+    if (rc) rc.value = roomCode || '';
+    // Navigate to matchmake screen so btnJoin's handler runs in the right context
+    showScreen('matchmake');
+    // Wait one frame for the DOM to settle, then trigger the join
+    requestAnimationFrame(() => document.getElementById('btnJoin')?.click());
+}
+
 function subscribePartyChannel(code) {
     if (partyChannel) { SB().removeChannel(partyChannel); partyChannel = null; }
     partyChannel = SB().channel('party-' + code)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'parties',
-            filter: `code=eq.${code}` }, payload => {
-            if (!payload.new) { partyState = null; renderParty(); return; }
-            const d = payload.new;
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'parties' }, async payload => {
+
+            // Client-side party-code filter.
+            // INSERT events carry the full new row; UPDATE/DELETE may only carry the
+            // primary-key column without REPLICA IDENTITY FULL, so code might be absent.
+            // When present and it doesn't match, skip. When absent, always re-fetch.
+            const changedCode = payload.new?.code || payload.old?.code;
+            if (changedCode && changedCode !== code) return;
+
+            // Party row deleted (everyone left)
+            if (payload.eventType === 'DELETE' || !payload.new) {
+                partyState = null; renderParty(); return;
+            }
+
+            // Re-fetch full row from DB — payload.new is incomplete without REPLICA IDENTITY FULL
+            const { data } = await SB().from('parties').select('*').eq('code', code).single();
+            if (!data) { partyState = null; renderParty(); return; }
+
             partyState = {
-                code, leaderId: d.leader_uid,
-                members: JSON.parse(d.members || '[]'),
-                mode: d.mode || 'casual',
+                code,
+                leaderId: data.leader_uid,
+                members: JSON.parse(data.members || '[]'),
+                mode: data.mode || 'casual',
             };
             selectedPartyMode = partyState.mode;
             renderParty();
             renderFriendsList();
 
-            // If leader pushed a deploy signal, join queue (non-leaders only —
-            // the leader already joins directly in partyDeploy())
-            if (d.deploy_mode && partyState.leaderId !== ME()) {
-                currentGameMode = d.deploy_mode;
-                const rc = document.getElementById('rCode');
-                if (rc) rc.value = d.deploy_room_code || '';
-                document.getElementById('btnJoin')?.click();
+            // Deploy signal: use re-fetched data (reliable even without REPLICA IDENTITY FULL).
+            // The 8-second clear window is well beyond the network round-trip for this re-fetch.
+            if (data.deploy_mode && partyState.leaderId !== ME()) {
+                startGameForParty(data.deploy_mode, data.deploy_room_code);
             }
         })
         .subscribe();
@@ -4826,13 +5108,28 @@ function partyCodeCopy() {
 
 async function partyInviteFriend(toUid, toName) {
     if (!partyState || !SB() || !ME()) return;
+    const btn = event?.target;
+
+    // Guard against duplicate invites — check if one already exists for this pair + party
+    const { data: existing } = await SB().from('party_invites')
+        .select('id')
+        .eq('from_uid', ME())
+        .eq('to_uid',   toUid)
+        .eq('party_code', partyState.code)
+        .limit(1);
+    if (existing && existing.length > 0) {
+        // Already sent — just reflect state visually
+        if (btn) { btn.textContent = 'Sent!'; btn.classList.replace('invite', 'invited'); }
+        return;
+    }
+
     const myName = localStorage.getItem('cw_name') || 'Pilot';
     await SB().from('party_invites').insert({
         from_uid: ME(), to_uid: toUid,
         from_name: myName, party_code: partyState.code,
     });
     // Give visual feedback on button
-    event?.target && (event.target.textContent = 'Sent!') && event.target.classList.replace('invite', 'invited');
+    if (btn) { btn.textContent = 'Sent!'; btn.classList.replace('invite', 'invited'); }
 }
 
 function showPartyInviteToast(invite) {
@@ -4866,21 +5163,21 @@ function partyInviteDecline() {
 async function partyDeploy() {
     if (!partyState || partyState.leaderId !== ME() || !SB()) return;
     const roomCode = genPartyCode();
-    currentGameMode = partyState.mode;
-    // Signal all party members via party row update
+    const mode     = partyState.mode;
+    // Broadcast deploy signal to all party members via DB update
     await SB().from('parties').update({
-        deploy_mode: partyState.mode,
+        deploy_mode: mode,
         deploy_room_code: roomCode,
     }).eq('code', partyState.code);
-    // Leader also deploys
-    const rc = document.getElementById('rCode');
-    if (rc) rc.value = roomCode;
-    document.getElementById('btnJoin')?.click();
-    // Clear deploy signal after a short window so it doesn't
-    // re-trigger if the party row is re-fetched later
-    setTimeout(() => {
-        SB().from('parties').update({ deploy_mode: null, deploy_room_code: null })
-            .eq('code', partyState?.code).catch(() => {});
+    // Leader joins via the same path as members (closes ws, shows screen, joins)
+    startGameForParty(mode, roomCode);
+    // Clear the deploy signal after members have had time to receive it
+    setTimeout(async () => {
+        if (!partyState) return;
+        try {
+            await SB().from('parties').update({ deploy_mode: null, deploy_room_code: null })
+                .eq('code', partyState.code);
+        } catch (_) {}
     }, 8000);
 }
 
@@ -4899,6 +5196,7 @@ const _origMmTab = mmTab;
 
 document.getElementById('btnBack').addEventListener('click', () => {
     if (ws) { ws.close(); ws = null; }
+    socialPresencePing();   // update last_seen when leaving a match
     showScreen('start');
 });
 
@@ -4932,6 +5230,11 @@ document.getElementById('chatInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') sendChat();
 });
 
+// Phase chat overlay (vote / opselect) — Enter to send
+document.getElementById('phaseChatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); sendPhaseChatMsg(); }
+});
+
 // In-game chat bar listeners (elements always exist after DOM load)
 document.getElementById('gameChatInput').addEventListener('keydown', e => {
     if (e.key === 'Enter')  { e.preventDefault(); sendGameChat();  }
@@ -4945,13 +5248,14 @@ document.getElementById('btnJoin').addEventListener('click', () => {
         setStatus('Enter a room code for Private mode.', 'red');
         return;
     }
-    const addr = 'https://test-core-wars-backend.onrender.com';
+    const addr = 'https://core-wars-backend.onrender.com';
     myState.name = document.getElementById('pName').value.trim() || 'Pilot';
     saveProfile();
     setStatus('Connecting…', 'yellow');
     try { ws = new WebSocket(addr); } catch { setStatus('Invalid URL.', 'red'); return; }
 
     ws.onopen = () => {
+        socialPresencePing();   // mark active the moment we join a game
         ws.send(JSON.stringify({
             t   : 'join',
             n   : myState.name,
@@ -5019,6 +5323,8 @@ function handleInit(d) {
     mapSpawns     = d.spawns || mapSpawns;
     mapName       = d.mapName || '';
     _rockCache.clear();
+    _bgCache = null;  // invalidate bg cache on map change
+    buildBgCache();
 
     myState.x    = d.x;
     myState.y    = d.y;
@@ -5130,6 +5436,7 @@ function handleStart(d) {
     if (d.spawns) mapSpawns     = d.spawns;
     if (d.mapName) mapName      = d.mapName;
     _rockCache.clear();
+    _bgCache = null;  // force rebuild for new game (map name may have changed)
 
     // Apply resolved factions
     if (d.fcts) teamFactions = d.fcts;
@@ -5177,6 +5484,7 @@ function handleStart(d) {
     mySpeedBoostEnd      = 0;
     myAbilityCooldownEnd = 0;
     myAbilityActive      = false;
+    myMoveSpeedMult      = 1.0;
     // Infantry system reset on new game
     localInfantry.clear();
     infInterpBufs.clear();
@@ -5249,8 +5557,13 @@ function handleStart(d) {
         const op = opSelectOperators.find(o => o.id === myLoadout.operatorId);
         document.getElementById('operatorHudLabel').textContent = op ? op.displayName : (myLoadout.operatorId || '');
         chip.style.display = '';
+
+        // Apply weapon move-speed multiplier for client-side prediction
+        const _wDef = opSelectWeapons[myLoadout.weaponId];
+        myMoveSpeedMult = (_wDef && _wDef.moveSpeedMult != null) ? _wDef.moveSpeedMult : 1.0;
     } else if (chip) {
         chip.style.display = 'none';
+        myMoveSpeedMult = 1.0;
     }
 
     // Show faction announcement in chat area
@@ -5373,9 +5686,13 @@ function handleSnapshot(d) {
 
 function handleChatMsg(d) {
     if (d.id && d.id === myId) return;
-    addChatMessage(d.nm || 'Unknown', d.msg, d.team !== undefined ? d.team : -1);
-    // Show bubble above the sender's sprite
-    if (d.id) {
+    const scope = d.scope || 'lobby';
+    // Server already filtered team messages, but guard on the client too
+    if (scope === 'team' && d.team !== myState.team) return;
+    addChatMessage(d.nm || 'Unknown', d.msg, d.team !== undefined ? d.team : -1, false, false, scope);
+    // Show bubble above the sender's sprite (lobby messages only — team chat
+    // is text-only since both teammates already see the bubble for their own shots)
+    if (d.id && scope === 'lobby') {
         chatBubbles.set(d.id, { msg: d.msg, expireAt: performance.now() + 4500 });
     }
 }
@@ -5834,7 +6151,7 @@ function processEvents(evs) {
                         const _originX = _isLocal ? myState.x : ev.x;
                         const _originY = _isLocal ? myState.y : ev.y;
                         // Rockets: muzzle flash from the actual shoulder position, not barrel tip
-                        const _muzzleForward = (pt === 'rocket') ? 14 : 38;
+                        const _muzzleForward = (pt === 'rocket') ? 14 : (WEAPON_PROPS[pt]?.muzzle ?? 38);
                         const muzzleX = _originX + Math.cos(ev.a) * _muzzleForward;
                         const muzzleY = _originY + Math.sin(ev.a) * _muzzleForward;
                         if (pt !== 'supp_field') emitMuzzleFlash(muzzleX, muzzleY, ev.a, ev.tm);
@@ -5849,7 +6166,18 @@ function processEvents(evs) {
                     const rNow = performance.now();
                     // 1. Player — very close to local player position
                     let _shotIsLocalPlayer = false;
-                    if (ev.tm === myState.team &&
+                    if (myVehicleId && myVehicleRole === 'driver' && (ev.pt || '').endsWith('_drv')) {
+                        // Driver firing their hull weapon from inside a vehicle:
+                        // use the vehicle's center position with a larger radius to catch all muzzle offsets.
+                        const _myVeh = localVehicles.get(myVehicleId);
+                        if (_myVeh && ev.tm === myState.team &&
+                            Math.hypot(ev.x - _myVeh.x, ev.y - _myVeh.y) < 130) {
+                            playerRecoilT  = rNow;
+                            camRecoilT     = rNow;
+                            camRecoilAngle = ev.a;
+                            _shotIsLocalPlayer = true; // suppresses vehicleRecoil on the main barrel
+                        }
+                    } else if (ev.tm === myState.team &&
                         Math.hypot(ev.x - myState.x, ev.y - myState.y) < 55) {
                         playerRecoilT  = rNow;
                         camRecoilT     = rNow;
@@ -6717,6 +7045,8 @@ function drawInfantry() {
         const _legPhase = _iws.phase;
         const _legDir   = _iws.ma;
 
+        if (!inView(u.x, u.y, 40)) continue;  // smooth state updated above; skip render
+
         const isHumanoid = tp === 'grunt' || tp === 'heavy'     ||
                            tp === 'roe_rifle'  || tp === 'roe_breach' ||
                            tp === 'epa_guardian' || tp === 'epa_intercept';
@@ -7405,8 +7735,8 @@ function predictMovement(dt) {
     // Apply speed boost multiplier if a speed ability is active — keeps client prediction
     // in sync with server movement so there are no microteleport snaps.
     const _spdMult = (performance.now() < mySpeedBoostEnd) ? 2.0 : 1.0;
-    let nx = myState.x + dx * 250 * _spdMult * dt;
-    let ny = myState.y + dy * 250 * _spdMult * dt;
+    let nx = myState.x + dx * 250 * myMoveSpeedMult * _spdMult * dt;
+    let ny = myState.y + dy * 250 * myMoveSpeedMult * _spdMult * dt;
 
     for (const b of localBuildings.values()) {
         if (b.tp === 'w') {
@@ -7792,14 +8122,17 @@ function drawWorld() {
     const now2 = performance.now();
     const t    = now2 / 1000;
 
-    // ── Base land fill ────────────────────────────────────────────────────────
-    // Rich dark earth with subtle texture gradient
-    const landGrad = ctx.createLinearGradient(0, 0, 0, mh);
-    landGrad.addColorStop(0,   '#0d1117');
-    landGrad.addColorStop(0.5, '#0e1219');
-    landGrad.addColorStop(1,   '#0b0f14');
-    ctx.fillStyle = landGrad;
-    ctx.fillRect(0, 0, mw, mh);
+    // ── Compute viewport culling bounds (once per frame) ─────────────────────
+    _computeViewBounds();
+
+    // ── Static background (land/grid/border/watermark) — cached offscreen ────
+    buildBgCache();  // no-op after first call for this map
+    if (_bgCache) {
+        ctx.drawImage(_bgCache, 0, 0);
+    } else {
+        // Fallback (first frame before cache is ready)
+        ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, mw, mh);
+    }
 
     // ── Water zones — rich natural rendering ──────────────────────────────────
     for (const wz of mapWaterZones) {
@@ -7808,31 +8141,6 @@ function drawWorld() {
 
     // ── Rocks (decorative, no collision) ─────────────────────────────────────
     drawMapRocks(t);
-
-    // ── Team colour gradients over land ──────────────────────────────────────
-    const rg = ctx.createLinearGradient(0, 0, mw * 0.52, 0);
-    rg.addColorStop(0, 'rgba(127,29,29,0.30)');
-    rg.addColorStop(1, 'rgba(127,29,29,0)');
-    ctx.fillStyle = rg;
-    ctx.fillRect(0, 0, mw / 2, mh);
-
-    const bg = ctx.createLinearGradient(mw, 0, mw * 0.48, 0);
-    bg.addColorStop(0, 'rgba(29,78,216,0.30)');
-    bg.addColorStop(1, 'rgba(29,78,216,0)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(mw / 2, 0, mw, mh);
-
-    // ── Grid ──────────────────────────────────────────────────────────────────
-    ctx.strokeStyle = 'rgba(255,255,255,0.022)';
-    ctx.lineWidth = 1;
-    const gs = 80;
-    for (let x = 0; x <= mw; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mh); ctx.stroke(); }
-    for (let y = 0; y <= mh; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mw,y); ctx.stroke(); }
-
-    // ── Map border ────────────────────────────────────────────────────────────
-    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(2, 2, mw-4, mh-4);
 
     // ── Centre divider ────────────────────────────────────────────────────────
     if (currentPhase === 1) {
@@ -8210,6 +8518,7 @@ function drawVehicles() {
             emitVehicleExhaust(v.x, v.y, hullA, isMech);
         }
         _vehLastPos.set(v.id, { x: v.x, y: v.y });
+        if (!inView(v.x, v.y, 120)) continue;  // skip render only; exhaust/pos state updated
         drawVehicle(v);
     }
 }
@@ -9698,7 +10007,8 @@ function drawVehicle(v) {
     ctx.rotate(-getCamRotation());
 
     const vDefC  = VEHICLE_DEFS[v.tp];
-    const hudY   = -(v.r + 18);
+    const _vR    = vDefC?.r ?? 50;   // v.r is not in wire format; read from VEHICLE_DEFS
+    const hudY   = -(_vR + 18);
     const barW   = 72;
 
     // HP bar
@@ -9722,7 +10032,7 @@ function drawVehicle(v) {
         const gap      = 3;                // gap between segments
         const segW     = (cbW - (capacity - 1) * gap) / capacity;
         const cbX      = -cbW / 2;
-        const cbY      = v.r + 10;         // below vehicle shadow
+        const cbY      = _vR + 10;         // below vehicle shadow
 
         // Background track
         ctx.fillStyle = 'rgba(0,0,0,0.70)';
@@ -9827,6 +10137,7 @@ function drawBuildings() {
     }
 
     for (const b of localBuildings.values()) {
+        if (!inView(b.x, b.y, 80)) continue;
         ctx.save();
         ctx.translate(b.x, b.y);
 
@@ -9843,71 +10154,168 @@ function drawBuildings() {
             drawDepot(b, bFaction, col, light, dark, mid, camRot);
 
         } else if (b.tp === 'bk') {
-            // ── BARRACKS ─────────────────────────────────────────────────────
+            // ── BARRACKS — faction-specific top-down ─────────────────────────
             const r = 26;
             const now2 = performance.now();
-            const pulse = Math.sin(now2 / 800) * 0.3 + 0.7;
+            const pulse  = Math.sin(now2 / 800) * 0.5 + 0.5;
+            const pulse2 = Math.sin(now2 / 550 + 1.4) * 0.5 + 0.5;
+            const S = r;
 
-            // Shadow
+            // Drop shadow (all factions)
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.beginPath(); ctx.ellipse(2, 3, r, r * 0.6, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(2, 3, S + 3, S * 0.7, 0, 0, Math.PI * 2); ctx.fill();
 
-            // Main body — hexagonal footprint
-            ctx.fillStyle = isRed ? '#450a0a' : '#0d2045';
-            ctx.strokeStyle = col;
-            ctx.lineWidth   = 2;
-            ctx.shadowColor = col; ctx.shadowBlur = 10 * pulse;
-            ctx.beginPath();
-            for (let _hi = 0; _hi < 6; _hi++) {
-                const _ha = (_hi / 6) * Math.PI * 2 - Math.PI / 6;
-                _hi === 0
-                    ? ctx.moveTo(Math.cos(_ha) * r, Math.sin(_ha) * r)
-                    : ctx.lineTo(Math.cos(_ha) * r, Math.sin(_ha) * r);
+            if (bFaction === 'roe') {
+                // ── ROE: Sandbagged field barracks — corrugated metal, battle-scarred ──
+                ctx.fillStyle = '#2d1d08';
+                ctx.beginPath(); ctx.roundRect(-S, -S, S * 2, S * 2, 2); ctx.fill();
+                ctx.fillStyle = '#3d2b10';
+                for (let i = 0; i < 4; i++) {
+                    const sx = (i - 1.5) * 13;
+                    ctx.beginPath(); ctx.ellipse(sx, -(S - 5), 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(sx,  (S - 5), 6, 4, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                for (let i = -1; i <= 1; i++) {
+                    ctx.beginPath(); ctx.ellipse(-(S - 5), i * 11, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.ellipse( (S - 5), i * 11, 4, 6, 0, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.strokeStyle = '#1a1006'; ctx.lineWidth = 0.8; ctx.globalAlpha = 0.5;
+                for (let i = 0; i < 4; i++) {
+                    const sx = (i - 1.5) * 13;
+                    ctx.beginPath(); ctx.moveTo(sx, -(S-9)); ctx.lineTo(sx, -(S-1)); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(sx,  (S-9)); ctx.lineTo(sx,  (S-1)); ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+                const bx = -S + 8, by = -S + 8, bw = S * 2 - 16, bh = S * 2 - 16;
+                ctx.fillStyle = '#1a1007'; ctx.fillRect(bx, by, bw, bh);
+                ctx.strokeStyle = '#221408'; ctx.lineWidth = 1.5;
+                for (let rx = bx + 3; rx < bx + bw - 1; rx += 6) {
+                    ctx.beginPath(); ctx.moveTo(rx, by); ctx.lineTo(rx, by + bh); ctx.stroke();
+                }
+                ctx.fillStyle = '#2d1d0a'; ctx.globalAlpha = 0.55;
+                ctx.fillRect(bx, by, bw, 4); ctx.globalAlpha = 1;
+                ctx.strokeStyle = '#3d2b10'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5;
+                ctx.beginPath(); ctx.moveTo(bx + 3, by + 5); ctx.lineTo(bx + bw - 3, by + 5); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(bx + 3, by + bh - 5); ctx.lineTo(bx + bw - 3, by + bh - 5); ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = '#3d2b10'; ctx.fillRect(-6, -5, 12, 10);
+                ctx.strokeStyle = '#1a1006'; ctx.lineWidth = 1;
+                ctx.strokeRect(-6, -5, 12, 10);
+                ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(6, 0); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 5); ctx.stroke();
+                ctx.fillStyle = '#0a0602'; ctx.fillRect(S - 8, -7, 8, 14);
+                ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 8 + pulse * 6;
+                ctx.globalAlpha = 0.7 + pulse * 0.3;
+                ctx.beginPath(); ctx.arc(S - 5, -S + 5, 3, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#4b3010'; ctx.lineWidth = 1.5;
+                ctx.strokeRect(-S, -S, S * 2, S * 2);
+
+            } else if (bFaction === 'bgm') {
+                // ── BGM: Industrial prefab barracks — steel walls, blast door, vents ──
+                ctx.fillStyle = '#180f04';
+                ctx.beginPath(); ctx.roundRect(-S, -S, S * 2, S * 2, 3); ctx.fill();
+                ctx.fillStyle = '#1e1208';
+                ctx.fillRect(-S + 6, -S + 6, S * 2 - 12, S * 2 - 12);
+                ctx.fillStyle = '#140e04'; ctx.fillRect(-S + 6, -3, S * 2 - 12, 6);
+                ctx.fillStyle = '#2a1a08';
+                ctx.fillRect(-S + 8, -S + 8, S * 2 - 16, 6);
+                ctx.fillRect(-S + 8, -S + 18, S * 2 - 16, 5);
+                ctx.fillRect(-S + 8,  S - 14, S * 2 - 16, 6);
+                ctx.fillRect(-S + 8,  S - 24, S * 2 - 16, 5);
+                ctx.strokeStyle = '#3d2510'; ctx.lineWidth = 1;
+                for (let bi = 1; bi < 4; bi++) {
+                    const bx2 = -S + 8 + bi * (S * 2 - 16) / 4;
+                    ctx.beginPath(); ctx.moveTo(bx2, -S + 8); ctx.lineTo(bx2, -S + 14); ctx.stroke();
+                }
+                ctx.fillStyle = '#251508'; ctx.fillRect(S - 10, -S + 6, 10, S * 2 - 12);
+                ctx.fillStyle = '#0a0602'; ctx.fillRect(S - 10, -8, 10, 16);
+                ctx.save();
+                ctx.beginPath(); ctx.rect(S - 10, -S + 6, 10, S * 2 - 12); ctx.clip();
+                for (let hy = -S + 6; hy < S - 4; hy += 9) {
+                    ctx.fillStyle = col; ctx.globalAlpha = 0.35; ctx.fillRect(S - 10, hy, 10, 5);
+                }
+                ctx.globalAlpha = 1; ctx.restore();
+                for (const vy of [-S + 10, S - 10]) {
+                    ctx.fillStyle = '#251508';
+                    ctx.beginPath(); ctx.arc(-S + 10, vy, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = col; ctx.globalAlpha = 0.12 + pulse * 0.1;
+                    ctx.beginPath(); ctx.arc(-S + 10, vy, 5, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+                ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 10 + pulse * 8;
+                ctx.globalAlpha = 0.65 + pulse * 0.35;
+                ctx.beginPath(); ctx.arc(S - 6, -S + 6, 3.5, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#3d2510'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.roundRect(-S, -S, S * 2, S * 2, 3); ctx.stroke();
+
+            } else {
+                // ── EPA: Clean modular habitat — precision panels, energy nodes ──
+                ctx.fillStyle = '#061014';
+                ctx.beginPath(); ctx.roundRect(-S, -S, S * 2, S * 2, 6); ctx.fill();
+                ctx.fillStyle = '#0b1e2e';
+                ctx.beginPath(); ctx.roundRect(-S + 5, -S + 5, S * 2 - 10, S * 2 - 10, 4); ctx.fill();
+                ctx.strokeStyle = col; ctx.lineWidth = 0.75; ctx.globalAlpha = 0.08;
+                for (let gx = -S + 10; gx < S; gx += 10) {
+                    ctx.beginPath(); ctx.moveTo(gx, -S + 5); ctx.lineTo(gx, S - 5); ctx.stroke();
+                }
+                for (let gy = -S + 10; gy < S; gy += 10) {
+                    ctx.beginPath(); ctx.moveTo(-S + 5, gy); ctx.lineTo(S - 5, gy); ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.globalAlpha = 0.2;
+                ctx.strokeRect(-S + 7, -S + 7, S * 2 - 14, S - 5);
+                ctx.strokeRect(-S + 7,      2, S * 2 - 14, S - 7);
+                ctx.globalAlpha = 1;
+                for (const [ex, ey] of [[-S+5,-S+5],[S-5,-S+5],[-S+5,S-5],[S-5,S-5]]) {
+                    ctx.fillStyle = mid; ctx.beginPath(); ctx.arc(ex, ey, 4, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 6 + pulse * 4;
+                    ctx.globalAlpha = 0.85;
+                    ctx.beginPath(); ctx.arc(ex, ey, 2, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                }
+                ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.globalAlpha = 0.1 + pulse * 0.07;
+                ctx.beginPath();
+                ctx.moveTo(-S+5,-S+5); ctx.lineTo(S-5,-S+5);
+                ctx.moveTo(-S+5, S-5); ctx.lineTo(S-5, S-5);
+                ctx.moveTo(-S+5,-S+5); ctx.lineTo(-S+5,S-5);
+                ctx.moveTo( S-5,-S+5); ctx.lineTo( S-5,S-5);
+                ctx.stroke(); ctx.globalAlpha = 1;
+                ctx.fillStyle = '#0d2230'; ctx.fillRect(S - 9, -S + 5, 9, S * 2 - 10);
+                ctx.fillStyle = '#030a0e'; ctx.fillRect(S - 9, -8, 9, 16);
+                ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.globalAlpha = 0.35;
+                ctx.strokeRect(S - 9, -S + 5, 9, S * 2 - 10); ctx.globalAlpha = 1;
+                ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 6;
+                ctx.globalAlpha = 0.45 + pulse * 0.2;
+                ctx.fillRect(-S + 8, -S, S * 2 - 16, 2); ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                ctx.strokeStyle = mid; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.roundRect(-S, -S, S * 2, S * 2, 6); ctx.stroke();
             }
-            ctx.closePath(); ctx.fill(); ctx.stroke();
-            ctx.shadowBlur = 0;
 
-            // Inner platform ring
-            ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-            ctx.globalAlpha = 0.35;
-            ctx.beginPath(); ctx.arc(0, 0, r - 6, 0, Math.PI * 2); ctx.stroke();
-            ctx.globalAlpha = 1;
-
-            // Infantry mode icon at center
-            const mode = b.infantryMode || 'grunt';
-            ctx.fillStyle = col;
-            ctx.font = 'bold 11px "Barlow Condensed", sans-serif';
-            ctx.textAlign    = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = col; ctx.shadowBlur = 8 * pulse;
-            const modeIcon = mode === 'heavy'         ? '⬛'
-                           : mode === 'roe_breach'    ? '▪'
-                           : mode === 'roe_rifle'     ? '▸'
-                           : mode === 'bgm_bur3'     ? '◈'
-                           : mode === 'bgm_bur8'     ? '◆'
-                           : mode === 'epa_guardian'  ? '⊞'
-                           : mode === 'epa_intercept' ? '◎'
-                           : '■';
-            ctx.fillText(modeIcon, 0, 0);
-            ctx.shadowBlur = 0;
-
-            // Production progress indicator — arc around edge
-            const timeSinceProd = (now2 % 4000) / 4000;  // approximate 4s cycle (client-side)
-            ctx.strokeStyle = col; ctx.lineWidth = 3.5;
-            ctx.globalAlpha = 0.6;
+            // Production progress arc — synced to server lastProduction timestamp
+            // b.lp is sent by server in wireBuild; arc fills in 4 s then resets
+            const _prodElapsed = Math.min(now2 - (b.lp || 0), 4000);
+            const timeSinceProd = _prodElapsed / 4000;
+            ctx.strokeStyle = col; ctx.lineWidth = 3.5; ctx.globalAlpha = 0.55;
             ctx.beginPath();
-            ctx.arc(0, 0, r + 3, -Math.PI / 2, -Math.PI / 2 + timeSinceProd * Math.PI * 2);
-            ctx.stroke();
-            ctx.globalAlpha = 1;
+            ctx.arc(0, 0, S + 5, -Math.PI / 2, -Math.PI / 2 + timeSinceProd * Math.PI * 2);
+            ctx.stroke(); ctx.globalAlpha = 1;
 
-            // HP bar
+            // Center mode indicator dot
+            ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 6 + pulse * 4;
+            ctx.globalAlpha = 0.8 + pulse * 0.2;
+            ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+            // HP bar (when damaged)
             const hpFrac = b.hp / (b.mhp || 300);
             if (hpFrac < 0.99) {
                 const bLen = 40;
                 ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(-bLen / 2, r + 5, bLen, 3);
+                ctx.fillRect(-bLen / 2, S + 8, bLen, 3);
                 ctx.fillStyle = hpFrac > 0.5 ? '#22c55e' : '#ef4444';
-                ctx.fillRect(-bLen / 2, r + 5, bLen * hpFrac, 3);
+                ctx.fillRect(-bLen / 2, S + 8, bLen * hpFrac, 3);
             }
 
         } else if (b.tp === 'w') {
@@ -11766,8 +12174,18 @@ function drawCores() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Core helpers ──────────────────────────────────────────────────────────────
-function spawnParticle(p) {
+function spawnParticle(props) {
     if (particles.length >= MAX_PARTICLES) return;
+    const p = _acquireParticle();
+    // Copy all props onto the pooled object
+    p.x = props.x ?? 0; p.y = props.y ?? 0;
+    p.vx = props.vx ?? 0; p.vy = props.vy ?? 0;
+    p.r = props.r ?? 3; p.r0 = props.r0 ?? props.r ?? 3;
+    p.col = props.col ?? '#ffffff';
+    p.alpha = props.alpha ?? 1;
+    p.life = props.life ?? 0.3; p.maxLife = props.maxLife ?? props.life ?? 0.3;
+    p.drag = props.drag ?? 0; p.gravity = props.gravity ?? 0;
+    p.bloom = props.bloom ?? false;
     particles.push(p);
 }
 
@@ -11782,7 +12200,13 @@ function updateParticles(now) {
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.life -= dt;
-        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        if (p.life <= 0) {
+            // Swap-remove: O(1) vs splice O(N); return to pool to avoid GC
+            _releaseParticle(p);
+            particles[i] = particles[particles.length - 1];
+            particles.pop();
+            continue;
+        }
         p.vx *= (1 - p.drag * dt * 60);
         p.vy *= (1 - p.drag * dt * 60);
         if (p.gravity) p.vy += p.gravity * dt;
@@ -11794,33 +12218,30 @@ function updateParticles(now) {
 // ── Draw: renders all particles ───────────────────────────────────────────────
 function drawParticles() {
     for (const p of particles) {
-        const t    = Math.max(0, p.life / p.maxLife); // 1→0 as it dies
+        const t    = Math.max(0, p.life / p.maxLife);
         const tinv = 1 - t;
-
-        // Alpha: fade-in for first 15%, fade-out for last 40%
         const fadeIn  = p.life > p.maxLife * 0.85 ? tinv / 0.15 : 1;
         const fadeOut = t < 0.40 ? t / 0.40 : 1;
         const alpha   = Math.min(fadeIn, fadeOut) * (p.alpha ?? 1);
-
-        // Radius: shrinks toward end
         const r = (p.r0 ?? p.r) * (0.3 + 0.7 * t);
 
         if (alpha < 0.01 || r < 0.3) continue;
+        if (!inView(p.x, p.y, r * 3 + 20)) continue;  // viewport cull
 
         ctx.save();
         ctx.globalAlpha = alpha;
 
         if (p.bloom) {
-            ctx.shadowColor = p.col;
-            ctx.shadowBlur  = r * 2.2;
+            // Fake glow: larger faint disc behind main circle — no shadowBlur GPU cost
+            ctx.globalAlpha = alpha * 0.22;
+            ctx.fillStyle   = p.col;
+            ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.6, 0, Math.PI * 2); ctx.fill();
+            ctx.globalAlpha = alpha;
         }
 
         ctx.fillStyle = p.col;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
 
-        ctx.shadowBlur  = 0;
         ctx.globalAlpha = 1;
         ctx.restore();
     }
@@ -12207,6 +12628,9 @@ function drawProjectiles() {
             y = pj.y + Math.sin(pj.a) * pj.spd * dt * 2.0;
         }
 
+        // Skip rendering entirely if projectile is offscreen
+        if (!inView(x, y, 30)) continue;
+
         const isRed = pj.team === 0;
         const pt    = pj.pt || 'pl';
 
@@ -12444,9 +12868,13 @@ function drawProjectiles() {
         const tx = x - Math.cos(_trailA) * lineLen;
         const ty = y - Math.sin(_trailA) * lineLen;
 
-        ctx.shadowColor = glow;
-        ctx.shadowBlur  = (pt === 't_break' || pt === 't_siege' || pt === 'bgm_rail' || pt === 'epa_rail' || pt === 'rocket') ? 22 : 14;
+        // Fake glow: wide translucent stroke before the main trail.
+        // Eliminates shadowBlur GPU filter — visually equivalent at combat speeds.
         ctx.lineCap     = 'round';
+        const isHeavy   = (pt === 't_break' || pt === 't_siege' || pt === 'bgm_rail' || pt === 'epa_rail' || pt === 'rocket');
+        ctx.strokeStyle = glow + (isHeavy ? '55' : '40');  // 33-34% alpha
+        ctx.lineWidth   = lineW * (isHeavy ? 5.0 : 3.5);
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke();
 
         // Main line: bright head fading to transparent tail
         const grad = ctx.createLinearGradient(x, y, tx, ty);
@@ -12456,8 +12884,6 @@ function drawProjectiles() {
         ctx.strokeStyle = grad;
         ctx.lineWidth   = lineW;
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke();
-
-        ctx.shadowBlur = 0;
 
         // Bright white core streak along the front 30% of the line
         const cx1 = x - Math.cos(_trailA) * lineLen * 0.3;
@@ -13020,6 +13446,277 @@ function isPlayerInVehicle(pid) {
         if (v.drv === pid || v.pax === pid) return true;
     }
     return false;
+}
+
+
+// ─── Per-weapon visual and movement properties ────────────────────────────────
+// muzzle : forward offset (px in aim-space) for muzzle-flash origin
+// rg     : [x, y] in aim-space — trigger / rear-grip hand position
+// fg     : [x, y] in aim-space — foregrip / support-hand position
+const WEAPON_PROPS = {
+    ar_standard:     { muzzle: 38, rg: [12, 4],  fg: [18, -2] },
+    br_precision:    { muzzle: 44, rg: [14, 4],  fg: [22, -2] },
+    smg_compact:     { muzzle: 28, rg: [ 8, 3],  fg: [14, -2] },
+    lmg_standard:    { muzzle: 46, rg: [14, 4],  fg: [22, -3] },
+    hmg_suppression: { muzzle: 50, rg: [15, 4],  fg: [24, -3] },
+    sniper_long:     { muzzle: 56, rg: [10, 4],  fg: [24, -2] },
+    dmr_standard:    { muzzle: 46, rg: [13, 4],  fg: [22, -2] },
+    pistol_standard: { muzzle: 22, rg: [ 9, 3],  fg: [13, -2] },
+    revolver_heavy:  { muzzle: 26, rg: [ 9, 3],  fg: [14, -2] },
+    shotgun_pump:    { muzzle: 36, rg: [11, 4],  fg: [22, -2] },
+};
+
+// drawWeaponShape — called inside the gun's aim-space ctx.save() block.
+// Origin is at the player-body centre (after BODY_OFFSET + stance rotation).
+// +x = aim direction.  +y = lateral (right side).
+// Neutral palette — no faction colour used here.
+function drawWeaponShape(wid, ctx, TAU) {
+    const A='#1a1f2e', B='#252d3d', C='#323d52', D='#111520',
+          E='#111827', F='#1e2535', G='#2d3748', H='#0d1117', I='#161d2a';
+
+    // ── M7 CARBINE (Assault Rifle) ─────────────────────────────────────────────
+    if (wid === 'ar_standard') {
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(4,-2.5,18,5,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(5,-2.5,17,2.5,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(7,-2.8,14,1);                         // rail
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(22,-1.5,16,3,1); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(10,-2,13,1.2,0.5); ctx.fill();
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(12,2.4,5,6.5,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(12.5,2.8,3.5,5,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(9,2.2,5,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(9.5,2.5,3.5,5.5,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(0,-2,5,4,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(1,-1.2,3,2.4);
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(38,0,2,1.8,0,0,TAU); ctx.fill();
+
+    // ── RAVAGER BR (Battle Rifle) — longer, scope, muzzle brake ──────────────
+    } else if (wid === 'br_precision') {
+        // Scope
+        ctx.fillStyle=C; ctx.fillRect(10,-5.5,11,1.5);
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(11,-7.5,7,3,1.5); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(11,-6,2,1.8,0,0,TAU); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(17.5,-6,1.6,1.4,0,0,TAU); ctx.fill();
+        // Stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(0,-2.5,6,5,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(1,-1.5,4,3);
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(5,-3,18,6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(6,-3,17,3,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(7,-3.5,22,1.2);
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(11,-1.8,13,1.2,0.5); ctx.fill();
+        // Grip + mag
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(14,2.5,5,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(14.5,3,3.5,5.5,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(10,2.5,5,7.5,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(10.5,3,3.5,6,[0,0,1.5,1.5]); ctx.fill();
+        // Barrel (longer)
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(23,-1.8,20,3.6,1); ctx.fill();
+        // Muzzle brake (2-port)
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(41,-2.5,4,5,1); ctx.fill();
+        ctx.fillStyle=D; ctx.fillRect(42,-1.2,2,1.2); ctx.fillRect(42,0.2,2,1.2);
+
+    // ── PHANTOM SMG — ultra-compact, stubby barrel, tall mag ─────────────────
+    } else if (wid === 'smg_compact') {
+        // Folded-stock stub
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-4,-1.8,6,3.6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(-3,-1,4,2);
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(2,-2.5,14,5,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(3,-2.5,12,2.5,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(4,-2.8,9,1);
+        // Short barrel
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(16,-1.5,12,3,1); ctx.fill();
+        // Compact grip
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(9,2.2,4.5,6,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(9.5,2.8,3,4.5,[0,0,1.5,1.5]); ctx.fill();
+        // Tall high-cap magazine
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(5,2.5,4,9,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(5.5,3,2.8,7.5,[0,0,1.5,1.5]); ctx.fill();
+        // Muzzle
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(28,0,2.2,2,0,0,TAU); ctx.fill();
+
+    // ── TORRENT LMG — drum mag, bipod stubs, heat shroud, long barrel ────────
+    } else if (wid === 'lmg_standard') {
+        // Stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-1,-3,8,6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(0,-2,6,4);
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(6,-3.5,18,7,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(7,-3.5,16,3.5,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(8,-4,18,1.2);
+        // Grip
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(16,3,5,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(16.5,3.5,3.5,5.5,[0,0,1.5,1.5]); ctx.fill();
+        // Drum magazine (most distinctive feature)
+        ctx.fillStyle=H; ctx.beginPath(); ctx.arc(13,8.5,7,0,TAU); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.arc(13,8.5,5,0,TAU); ctx.fill();
+        ctx.fillStyle=G; ctx.beginPath(); ctx.arc(13,8.5,2,0,TAU); ctx.fill();
+        // Bipod stubs (folded)
+        ctx.fillStyle=G;
+        ctx.fillRect(18,3.5,1.5,5); ctx.fillRect(20.5,3.5,1.5,5);
+        // Heat shroud + vents
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(24,-2.5,22,5,1); ctx.fill();
+        ctx.fillStyle=D;
+        for (let v=0;v<5;v++) ctx.fillRect(26+v*3.8,-2.5,1.5,1.5);
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(25,-1.2,20,2.4,0.5); ctx.fill();
+        // Muzzle crown
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(46,0,2.5,2.2,0,0,TAU); ctx.fill();
+        ctx.fillStyle=D; ctx.beginPath(); ctx.ellipse(46,0,1.2,1.2,0,0,TAU); ctx.fill();
+
+    // ── WRECKER HMG — massive, belt feed, cooling fins, heavy muzzle brake ───
+    } else if (wid === 'hmg_suppression') {
+        // Beefy stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-2,-3,7,6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(-1,-2,5,4);
+        // Massive receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(4,-4,20,8,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(5,-4,18,4,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(6,-4.5,18,1.2);
+        // Belt-feed stub (side)
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(8,-8,5,4,1); ctx.fill();
+        ctx.fillStyle=H; ctx.fillRect(9,-7,3,2);
+        // Large grip
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(17,3.5,6,8,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(17.5,4,4.5,6.5,[0,0,1.5,1.5]); ctx.fill();
+        // Ammo box (side)
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(9,4,7,9,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(9.5,4.5,5.5,7.5,[0,0,1.5,1.5]); ctx.fill();
+        // Heavy barrel shroud + cooling fins
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(24,-3,26,6,1); ctx.fill();
+        ctx.fillStyle=B;
+        for (let f=0;f<5;f++) ctx.fillRect(27+f*4.5,-4,2,1.5);
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(25,-1.5,24,3,0.5); ctx.fill();
+        // Multi-port muzzle brake
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(49,-3.5,4,7,1); ctx.fill();
+        ctx.fillStyle=D; ctx.fillRect(50,-2,2,1.5); ctx.fillRect(50,0.5,2,1.5);
+
+    // ── ECLIPSE SR (Sniper) — very long barrel, elevated scope, bipod, suppressor
+    } else if (wid === 'sniper_long') {
+        // Thin precision stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-2,-1.8,8,3.6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(-1,-1,6,2);
+        ctx.fillStyle=C; ctx.fillRect(-1,-1,6,0.8);                         // cheek piece
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(5,-2.5,14,5,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(6,-2.5,12,2.5,[1,1,0,0]); ctx.fill();
+        // Elevated scope rail + tube
+        ctx.fillStyle=C; ctx.fillRect(8,-5.5,12,1.5);
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(9,-8.5,10,3.5,1.5); ctx.fill();
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(10,-8.5,8,1.5,[1,1,0,0]); ctx.fill(); // turret
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(9.5,-6.8,2.2,1.8,0,0,TAU); ctx.fill();  // obj lens
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(18.5,-6.8,2,1.5,0,0,TAU); ctx.fill();  // ocu lens
+        // Small grip + mag
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(11,2,4,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(11.5,2.5,2.8,5.5,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(8,2,4,6,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(8.5,2.5,2.8,5,[0,0,1.5,1.5]); ctx.fill();
+        // Very long thin barrel
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(19,-1.3,37,2.6,1); ctx.fill();
+        // Bipod stubs (folded)
+        ctx.fillStyle=G; ctx.fillRect(20,1.3,1.2,4.5); ctx.fillRect(22.5,1.3,1.2,4.5);
+        // Suppressor at muzzle
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(53,-2.2,5,4.4,1); ctx.fill();
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(58,0,2,1.8,0,0,TAU); ctx.fill();
+
+    // ── WATCHMAN DMR — scope, precision barrel, between AR and sniper ─────────
+    } else if (wid === 'dmr_standard') {
+        // Stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-1,-2,7,4,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(0,-1.2,5,2.4);
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(5,-2.8,17,5.6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(6,-2.8,15,2.8,[1,1,0,0]); ctx.fill();
+        ctx.fillStyle=C; ctx.fillRect(8,-3.5,16,1.2);
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(11,-1.8,12,1.2,0.5); ctx.fill();
+        // Scope
+        ctx.fillStyle=C; ctx.fillRect(10,-5.5,10,1.5);
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(11,-7.5,7,3,1.5); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(11.5,-6,2,1.6,0,0,TAU); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.ellipse(17,-6,1.8,1.4,0,0,TAU); ctx.fill();
+        // Grip + mag
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(13,2.5,4.5,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(13.5,3,3,5.5,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(9,2.5,4.5,7,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=I; ctx.beginPath(); ctx.roundRect(9.5,3,3,5.5,[0,0,1.5,1.5]); ctx.fill();
+        // Long precision barrel
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(22,-1.5,24,3,1); ctx.fill();
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(46,0,2,1.8,0,0,TAU); ctx.fill();
+
+    // ── SIDEARM M3 (Pistol) — compact slide, short barrel, small grip ─────────
+    } else if (wid === 'pistol_standard') {
+        // Frame
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(3,-2.2,15,4.4,1); ctx.fill();
+        // Slide
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(5,-2.2,14,2.2,[1,1,0,0]); ctx.fill();
+        // Slide serrations (rear)
+        ctx.fillStyle=A;
+        for (let s=0;s<3;s++) ctx.fillRect(5+s*2,-2.2,1,2.2);
+        // Ejection port cut
+        ctx.fillStyle=A; ctx.fillRect(10,-2.2,4,1.5);
+        // Short barrel
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(17,-1.2,5,2.4,1); ctx.fill();
+        // Grip
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(6,2.2,6,7.5,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(6.5,2.8,4.5,6,[0,0,1.5,1.5]); ctx.fill();
+        ctx.fillStyle=H; ctx.beginPath(); ctx.roundRect(7,3.5,4,6,[0,0,2,2]); ctx.fill();
+        // Trigger guard
+        ctx.strokeStyle=A; ctx.lineWidth=1.5;
+        ctx.beginPath(); ctx.arc(9,2,3.5,0,Math.PI); ctx.stroke();
+        // Muzzle (small)
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(22,0,1.8,1.5,0,0,TAU); ctx.fill();
+
+    // ── IRONCLAD .50 (Revolver) — large cylinder, short heavy barrel ──────────
+    } else if (wid === 'revolver_heavy') {
+        // Frame
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(3,-2.5,17,5,1); ctx.fill();
+        // Cylinder (the defining feature)
+        ctx.fillStyle=G; ctx.beginPath(); ctx.arc(12,0,5.5,0,TAU); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.arc(12,0,4.5,0,TAU); ctx.fill();
+        ctx.fillStyle=D;
+        for (let c=0;c<6;c++) {
+            const ca=(c/6)*TAU;
+            ctx.beginPath(); ctx.arc(12+Math.cos(ca)*2.8,Math.sin(ca)*2.8,1.0,0,TAU); ctx.fill();
+        }
+        ctx.fillStyle=G; ctx.beginPath(); ctx.arc(12,0,0.8,0,TAU); ctx.fill();
+        // Short heavy barrel + rib
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(17,-1.8,9,3.6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(17,-2.5,8,1);
+        // Large rounded grip
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(5,2.8,7.5,9,[0,0,3,3]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(5.5,3.5,5.5,7.5,[0,0,2.5,2.5]); ctx.fill();
+        // Hammer (visible from top)
+        ctx.fillStyle=G; ctx.beginPath(); ctx.roundRect(4,-4,4,2.5,1); ctx.fill();
+        // Wide-bore muzzle
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(26,0,2.2,2.2,0,0,TAU); ctx.fill();
+        ctx.fillStyle=D; ctx.beginPath(); ctx.arc(26,0,1.2,0,TAU); ctx.fill();
+
+    // ── RAMPART PUMP (Shotgun) — wide barrel, tube mag, pump grip, choke ──────
+    } else {  // shotgun_pump (and fallback)
+        // Solid stock
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(-2,-2.5,8,5,1); ctx.fill();
+        ctx.fillStyle=B; ctx.fillRect(-1,-1.5,6,3);
+        // Receiver
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(5,-3,14,6,1); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(6,-3,12,3,[1,1,0,0]); ctx.fill();
+        // Trigger group
+        ctx.fillStyle=E; ctx.beginPath(); ctx.roundRect(10,2.5,6,5,[0,0,2,2]); ctx.fill();
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(10.5,3,4.5,3.5,[0,0,1.5,1.5]); ctx.fill();
+        // Barrel (wide)
+        ctx.fillStyle=D; ctx.beginPath(); ctx.roundRect(19,-2.2,18,4.4,1); ctx.fill();
+        // Under-barrel tube magazine
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(19,2.2,16,3,1); ctx.fill();
+        ctx.fillStyle=A; ctx.beginPath(); ctx.roundRect(19.5,2.7,15,2.2,0.5); ctx.fill();
+        // Pump foregrip (distinct sliding grip)
+        ctx.fillStyle=F; ctx.beginPath(); ctx.roundRect(21,-3.2,7,7.4,2); ctx.fill();
+        ctx.fillStyle=B; ctx.beginPath(); ctx.roundRect(22,-2.8,5,6.4,1.5); ctx.fill();
+        ctx.fillStyle=A;
+        for (let r=0;r<3;r++) ctx.fillRect(22.5+r*1.4,-2,0.8,5.5);
+        // Vent rib (top)
+        ctx.fillStyle=B; ctx.fillRect(19,-2.5,17,0.8);
+        // Flared choke muzzle
+        ctx.fillStyle=G; ctx.beginPath(); ctx.ellipse(37,0,3,2.8,0,0,TAU); ctx.fill();
+        ctx.fillStyle=D; ctx.beginPath(); ctx.ellipse(37,0,1.8,1.8,0,0,TAU); ctx.fill();
+    }
 }
 
 function drawPlayers() {
@@ -13960,16 +14657,21 @@ function drawPlayer({ x, y, team, hp, maxHp, name, a = 0, isSelf, burning = fals
         ctx.fillStyle = '#2d3748'; ctx.fillRect(-14, -2, 6, 1.8);
     }
 
+    // ── Per-weapon grip positions ─────────────────────────────────────────────────
+    const _wid = _ldout?.weaponId || 'ar_standard';
+    const _wp  = WEAPON_PROPS[_wid] || WEAPON_PROPS.ar_standard;
+    const _rg  = _wp.rg;  // [x, y] in aim-space — trigger / rear grip
+    const _fg  = _wp.fg;  // [x, y] in aim-space — foregrip / support hand
+
     // ── Rear arm (trigger hand) ───────────────────────────────────────────────────
     const sa  = STANCE_ANGLE;
     // Recoil only applies to the local player — remote players don't share our recoil state
     const pRO  = isSelf ? getRecoilOffset(playerRecoilT, 140, 5) : 0;
     const roDx = -pRO * Math.cos(sa);
     const roDy = -pRO * Math.sin(sa);
-    // Gun grip in aim-space: (12, 4).  Convert to stance-space and add recoil.
-    // Also add BODY_OFFSET along stance-x so the hand reaches the (unshifted) gun.
-    const grx =  12 * Math.cos(-sa) - 4  * Math.sin(-sa) + roDx + BODY_OFFSET;
-    const gry =  12 * Math.sin(-sa) + 4  * Math.cos(-sa) + roDy;
+    // Convert weapon grip aim-space coords → stance-space, then add recoil + body offset
+    const grx = _rg[0] * Math.cos(-sa) - _rg[1] * Math.sin(-sa) + roDx + BODY_OFFSET;
+    const gry = _rg[0] * Math.sin(-sa) + _rg[1] * Math.cos(-sa) + roDy;
     ctx.strokeStyle = colDk; ctx.lineWidth = 7;
     ctx.beginPath(); ctx.moveTo(-2, 8); ctx.quadraticCurveTo(6, 13, grx, gry); ctx.stroke();
     ctx.strokeStyle = colMd; ctx.lineWidth = 4;
@@ -13983,7 +14685,7 @@ function drawPlayer({ x, y, team, hp, maxHp, name, a = 0, isSelf, burning = fals
     ctx.strokeStyle = col; ctx.lineWidth = 1.2; ctx.stroke();
     ctx.fillStyle = colMd;
     ctx.beginPath(); ctx.ellipse(-2, 0, 4.5, 7, 0, 0, TAU); ctx.fill();
-    // Chest plate (tall strip — matches new wide orientation)
+    // Chest plate
     ctx.fillStyle = col; ctx.globalAlpha = 0.55;
     ctx.beginPath(); ctx.roundRect(-1, -5.5, 4, 11, 1.5); ctx.fill();
     ctx.globalAlpha = 1;
@@ -13991,50 +14693,19 @@ function drawPlayer({ x, y, team, hp, maxHp, name, a = 0, isSelf, burning = fals
     ctx.beginPath(); ctx.roundRect(0, -3.5, 2.5, 7, 1); ctx.fill();
     ctx.globalAlpha = 1;
 
-    // ── Gun — drawn in true aim-space, shifted back by recoil ────────────────────
+    // ── Gun — weapon-specific shape drawn in aim-space ────────────────────────────
     ctx.save();
     ctx.translate(BODY_OFFSET, 0);   // undo body offset — gun must not move
     ctx.rotate(-sa);
     if (pRO > 0) ctx.translate(-pRO, 0);   // gun slides back along aim axis
     ctx.lineCap = 'butt';
-    // Receiver
-    ctx.fillStyle = '#1a1f2e';
-    ctx.beginPath(); ctx.roundRect(4, -2.5, 18, 5, 1); ctx.fill();
-    // Upper receiver
-    ctx.fillStyle = '#252d3d';
-    ctx.beginPath(); ctx.roundRect(5, -2.5, 17, 2.5, [1,1,0,0]); ctx.fill();
-    // Rail
-    ctx.fillStyle = '#323d52'; ctx.fillRect(7, -2.8, 14, 1);
-    // Barrel
-    ctx.fillStyle = '#111520';
-    ctx.beginPath(); ctx.roundRect(22, -1.5, 16, 3, 1); ctx.fill();
-    // Handguard underside
-    ctx.fillStyle = '#1e2535';
-    ctx.beginPath(); ctx.roundRect(10, -2, 13, 1.2, 0.5); ctx.fill();
-    // Pistol grip
-    ctx.fillStyle = '#111827';
-    ctx.beginPath(); ctx.roundRect(12, 2.4, 5, 6.5, [0,0,2,2]); ctx.fill();
-    ctx.fillStyle = '#1e2535';
-    ctx.beginPath(); ctx.roundRect(12.5, 2.8, 3.5, 5, [0,0,1.5,1.5]); ctx.fill();
-    // Magazine
-    ctx.fillStyle = '#0d1117';
-    ctx.beginPath(); ctx.roundRect(9, 2.2, 5, 7, [0,0,2,2]); ctx.fill();
-    ctx.fillStyle = '#161d2a';
-    ctx.beginPath(); ctx.roundRect(9.5, 2.5, 3.5, 5.5, [0,0,1.5,1.5]); ctx.fill();
-    // Stock
-    ctx.fillStyle = '#1a1f2e';
-    ctx.beginPath(); ctx.roundRect(0, -2, 5, 4, 1); ctx.fill();
-    ctx.fillStyle = '#222840'; ctx.fillRect(1, -1.2, 3, 2.4);
-    // Muzzle device
-    ctx.fillStyle = '#2d3748';
-    ctx.beginPath(); ctx.ellipse(38, 0, 2, 1.8, 0, 0, TAU); ctx.fill();
+    drawWeaponShape(_wid, ctx, TAU);
     ctx.restore(); // back to stance-space
     ctx.lineCap = 'round';
 
-    // ── Front arm (support / foregrip hand) — also offset by recoil ──────────────
-    // Foregrip in aim-space: (18, -2) → stance-space, shifted by recoil + body offset
-    const fgx =  18 * Math.cos(-sa) - (-2) * Math.sin(-sa) + roDx + BODY_OFFSET;
-    const fgy =  18 * Math.sin(-sa) + (-2) * Math.cos(-sa) + roDy;
+    // ── Front arm (support / foregrip hand) ───────────────────────────────────────
+    const fgx = _fg[0] * Math.cos(-sa) - _fg[1] * Math.sin(-sa) + roDx + BODY_OFFSET;
+    const fgy = _fg[0] * Math.sin(-sa) + _fg[1] * Math.cos(-sa) + roDy;
     ctx.strokeStyle = colDk; ctx.lineWidth = 7;
     ctx.beginPath(); ctx.moveTo(-1, -8); ctx.quadraticCurveTo(6, -12, fgx, fgy); ctx.stroke();
     ctx.strokeStyle = colMd; ctx.lineWidth = 4;
